@@ -24,7 +24,7 @@
           <div class="col-md-2 d-flex align-items-end">
             <button type="submit" class="btn btn-primary">Submit</button>
           </div> -->
-          {% if output %}
+          {% if message %} {{ message }} {% endif %} {% if output %}
           <div class="col-md-12">
             <div class="table-responsive">
               <table class="table table-bordered">
@@ -55,22 +55,4 @@
     integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
     crossorigin="anonymous"
   ></script>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const inputBox = document.getElementById("stock");
-
-      inputBox.addEventListener("keyup", function () {
-        var stock_id = inputBox.value
-        fetch( '{{ url_for('get_stock_id') }}?stock='+stock_id, {
-          method: "POST",
-        })
-        .then(response => response.json())
-        .then((data) => {
-          console.log(data)
-        })
-        console.log("Input changed to:", inputBox.value);
-      });
-    });
-  </script>
 </html>
