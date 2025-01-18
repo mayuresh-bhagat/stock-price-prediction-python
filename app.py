@@ -56,9 +56,19 @@ def predict_api():
 
         prediction = model.predict(X_test)
 
+        prediction_unscaled = scaler.inverse_transform(prediction.reshape(-1, 1))
+        y_test_unscaled = scaler.inverse_transform(y_test.reshape(-1, 1))
+
+        mean_diff = np.mean(y_test_unscaled - prediction_unscaled)
+
+
+        print(prediction_unscaled[-1].tolist()[0] + mean_diff)
         output = {
-            'Prediction': scaler.inverse_transform(prediction.reshape(-1, 1))[-1].tolist()[0],  
-            'Acutal': scaler.inverse_transform(y_test.reshape(-1, 1))[-1].tolist()[0]
+            'Prediction': prediction_unscaled[-1].tolist()[0],  
+            'Acutal': y_test_unscaled[-1].tolist()[0],
+            'Mean Diff': mean_diff,
+            'Prediction + Mean Diff': prediction_unscaled[-1].tolist()[0] + mean_diff,
+            'Prediction - Mean Diff': prediction_unscaled[-1].tolist()[0] - mean_diff
         }
 
         print(output)
@@ -67,14 +77,14 @@ def predict_api():
         return "Please pass the parameter ticker"
 
 
-@app.route('/predict', methods=["GET"])
+@app.route('/predict', methods=["GET", "POST"])
 def predict():
 
     ticker = request.args.get('ticker')
     
     if 'ticker' in request.args.keys():
 
-        # Get the ticker object
+        # # Get the ticker object
         stock = yf.Ticker(ticker)
 
         # Get real-time price data
@@ -116,23 +126,34 @@ def predict():
 
         prediction = model.predict(X_test)
 
+        prediction_unscaled = scaler.inverse_transform(prediction.reshape(-1, 1))
+        y_test_unscaled = scaler.inverse_transform(y_test.reshape(-1, 1))
+
+        mean_diff = np.mean(y_test_unscaled - prediction_unscaled)
+
         ## Actual vs Predicted Chart
         plt.figure(figsize=(12, 6))
-        plt.plot(scaler.inverse_transform(y_test.reshape(-1, 1)), 'r', label='Actual Price')
-        plt.plot(scaler.inverse_transform(prediction.reshape(-1, 1)), 'g', label='Predicted Price')
+        plt.plot(y_test_unscaled, 'r', label='Actual Price')
+        plt.plot(prediction_unscaled, 'g', label='Predicted Price')
         plt.title("Acutal Vs Predicted")
         plt.xlabel("Time")
         plt.ylabel("Price")
         plt.legend()
         actual_predicted_path = save_fig("acutal_predicted")
 
+        mean_diff = np.mean(y_test_unscaled - prediction_unscaled)
+
+        print(prediction_unscaled[-1].tolist()[0] + mean_diff)
         output = {
-            'Prediction': scaler.inverse_transform(prediction.reshape(-1, 1))[-1].tolist()[0],  
-            'Acutal': scaler.inverse_transform(y_test.reshape(-1, 1))[-1].tolist()[0]
+            'Prediction': np.round(prediction_unscaled[-1].tolist()[0], 2),  
+            'Acutal': np.round(y_test_unscaled[-1].tolist()[0], 2),
+            'Mean Diff': np.round(mean_diff, 2),
+            'Prediction + Mean Diff': np.round(prediction_unscaled[-1].tolist()[0] + mean_diff, 2),
+            'Prediction - Mean Diff': np.round(prediction_unscaled[-1].tolist()[0] - mean_diff, 2)
         }
 
         print(output)
-        return render_template('index.html', output=output, actual_predicted = actual_predicted_path, ema_chart_100_200 = ema_chart_path_100_200)
+        return render_template('index.html', ticker=ticker, output=output, actual_predicted = actual_predicted_path, ema_chart_100_200 = ema_chart_path_100_200)
     else :
         return render_template('index.html', message="Invalid Request")
     
