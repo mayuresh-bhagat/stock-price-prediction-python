@@ -89,7 +89,8 @@ def predict_api():
             'Acutal': y_test_unscaled[-1].tolist()[0],
             'Mean Diff': mean_diff,
             'Prediction + Mean Diff': prediction_unscaled[-1].tolist()[0] + mean_diff,
-            'Prediction - Mean Diff': prediction_unscaled[-1].tolist()[0] - mean_diff
+            'Prediction - Mean Diff': prediction_unscaled[-1].tolist()[0] - mean_diff,
+            'Date': df.index[::-1][0].strftime('%Y-%m-%d')
         }
 
         print(output)
@@ -191,7 +192,8 @@ def predict():
             'Acutal': np.round(y_test_unscaled[-1].tolist()[0], 2),
             'Mean Diff': np.round(mean_diff, 2),
             'Prediction + Mean Diff': np.round(prediction_unscaled[-1].tolist()[0] + mean_diff, 2),
-            'Prediction - Mean Diff': np.round(prediction_unscaled[-1].tolist()[0] - mean_diff, 2)
+            'Prediction - Mean Diff': np.round(prediction_unscaled[-1].tolist()[0] - mean_diff, 2),
+            'Date': df.index[::-1][0].strftime('%Y-%m-%d')
         }
 
         print(output)
