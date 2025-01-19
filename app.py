@@ -1,6 +1,7 @@
 from flask import Flask, render_template, jsonify, request
 import pandas as pd
-import requests
+# import tflite_runtime.interpreter as tflite
+import tensorflow.lite as tflite
 import joblib
 import numpy as np
 import matplotlib.pyplot as plt
@@ -52,9 +53,29 @@ def predict_api():
             y_test.append(input_data[i, 0])
         X_test, y_test = np.array(x_test), np.array(y_test)
 
-        model = joblib.load("stock-price-prediction-keras-model.pkl")
+        # Load the TFLite model
+        interpreter = tflite.Interpreter(model_path="stock-price-prediction-lite.tflite")
+        interpreter.allocate_tensors()
 
-        prediction = model.predict(X_test)
+        # Get input and output details
+        input_details = interpreter.get_input_details()
+        output_details = interpreter.get_output_details()
+
+        input_data = X_test.astype(np.float32)
+
+        interpreter.resize_tensor_input(input_details[0]["index"], (X_test.shape[0], 200, 1))
+        interpreter.resize_tensor_input(output_details[0]["index"], (X_test.shape[0], 1))
+        
+        interpreter.allocate_tensors()
+
+        interpreter.set_tensor(input_details[0]['index'], input_data)
+
+        interpreter.invoke()
+
+        prediction = interpreter.get_tensor(output_details[0]['index'])
+
+        # model = joblib.load("stock-price-prediction-keras-model.pkl")
+        # prediction = model.predict(X_test)
 
         prediction_unscaled = scaler.inverse_transform(prediction.reshape(-1, 1))
         y_test_unscaled = scaler.inverse_transform(y_test.reshape(-1, 1))

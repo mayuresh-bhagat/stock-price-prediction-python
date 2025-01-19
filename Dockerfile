@@ -1,4 +1,4 @@
-FROM python:3.10
+FROM python:3.10-slim
 COPY . /app
 WORKDIR /app
 RUN pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org -r requirements.txt
