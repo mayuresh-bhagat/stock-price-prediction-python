@@ -21,7 +21,7 @@ def save_fig(fig_id, tight_layout=True, fig_extension="png", resolution=300):
 def index():
     return render_template('index.html')
 
-@app.route('/predict_api', methods=["POST"])
+@app.route('/predict_api', methods=["GET", "POST"])
 def predict_api():
 
     ticker = request.args.get('ticker')
